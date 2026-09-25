@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeskFit - your ergonomic numbers</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#0f1512; color:#e9f0eb; min-height:100vh; }
+  .wrap { max-width:720px; margin:0 auto; padding:64px 24px; }
+  .tag { color:#5cc8e8; font-weight:600; letter-spacing:2px; text-transform:uppercase; font-size:12px; }
+  h1 { font-size:clamp(34px,6vw,52px); line-height:1.1; margin:14px 0 18px; }
+  h1 span { color:#5cc8e8; }
+  p.lead { font-size:18px; color:#9fb3ac; max-width:560px; line-height:1.6; }
+  .cta { display:inline-block; margin-top:32px; background:#5cc8e8; color:#06222e; font-weight:700; padding:14px 32px; border-radius:10px; text-decoration:none; font-size:16px; }
+  .cta:hover { filter:brightness(1.1); }
+  .feats { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-top:56px; }
+  .feat { background:#15201b; border:1px solid #27424a; border-radius:12px; padding:20px; }
+  .feat b { display:block; margin-bottom:6px; color:#fff; }
+  .feat p { color:#87998f; font-size:14px; line-height:1.5; }
+  .foot { margin-top:56px; color:#5c6c66; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tag">DeskFit</div>
+  <h1>Your desk is 72 cm because <span>the factory sells 72 cm.</span> Your back disagrees.</h1>
+  <p class="lead">Standard desk height was designed for a person who does not exist. DeskFit computes your actual setup from your body: chair height, desk height sitting and standing, monitor top, keyboard tray and viewing distance - with the tolerance band for each.</p>
+  <a class="cta" href="app.html">Get my numbers</a>
+  <div class="feats">
+    <div class="feat"><b>From your height</b><p>Seven measurements from one input, using standard anthropometric ratios - not furniture-store defaults.</p></div>
+    <div class="feat"><b>Bands, not points</b><p>Bodies vary. Every number comes with the range that still counts as correct.</p></div>
+    <div class="feat"><b>Sit and stand</b><p>Standing-desk numbers included, because the same desk has two right heights and both are probably wrong right now.</p></div>
+  </div>
+  <div class="foot">DeskFit - a tiny tool from the App Factory.</div>
+</div>
+</body>
+</html>
