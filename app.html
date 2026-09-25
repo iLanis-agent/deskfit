@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeskFit - your ergonomic numbers</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#0f1512; color:#e9f0eb; min-height:100vh; }
+  .wrap { max-width:900px; margin:0 auto; padding:28px 20px 80px; }
+  header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+  header h1 { font-size:22px; } header h1 span { color:#5cc8e8; }
+  header a { color:#87998f; text-decoration:none; font-size:14px; }
+  .card { background:#15201b; border:1px solid #27424a; border-radius:12px; padding:18px; margin-bottom:18px; }
+  label { font-size:12px; color:#87998f; display:block; margin-bottom:4px; }
+  input { background:#0f1512; border:1px solid #33555f; border-radius:8px; color:#e9f0eb; padding:9px 10px; font-size:14px; width:100%; }
+  button { background:#5cc8e8; border:none; color:#06222e; font-weight:700; padding:11px 22px; border-radius:9px; font-size:14px; cursor:pointer; }
+  .row4 { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:12px; align-items:end; }
+  .verdict { background:#0f2229; border:1px solid #2a4a55; border-radius:10px; padding:14px 16px; margin-bottom:14px; font-size:15px; line-height:1.6; }
+  .verdict b { color:#5cc8e8; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
+  .stat { background:#0f1512; border:1px solid #27424a; border-radius:10px; padding:12px; }
+  .stat .v { font-size:21px; font-weight:700; color:#fff; }
+  .stat .b { font-size:11px; color:#5cc8e8; margin-top:1px; }
+  .stat .k { font-size:11px; color:#87998f; margin-top:2px; line-height:1.4; }
+  .err { color:#ff8a8a; font-size:13px; margin-top:8px; }
+  .note { color:#5c6c66; font-size:12px; margin-top:10px; }
+  svg text { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+  @media (max-width:700px){ .grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>Desk<span>Fit</span></h1><a href="index.html">home</a></header>
+
+  <div class="card">
+    <div class="row4">
+      <div><label>Height (cm)</label><input id="cm" type="number" step="0.5" value="175"></div>
+      <div><label>or feet</label><input id="ft" type="number" placeholder="5"></div>
+      <div><label>and inches</label><input id="inch" type="number" placeholder="9"></div>
+      <div><button id="go">Fit me</button></div>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="note">Enter cm, or feet+inches (they override cm). Measurements are starting points - comfort wins over any table.</div>
+  </div>
+
+  <div id="out"></div>
+</div>
+<script src="engine.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function stat(f, key){
+    const m = f[key];
+    return '<div class="stat"><div class="v">' + m.value + ' cm</div><div class="b">' + m.min + ' - ' + m.max + ' cm</div><div class="k">' + esc(m.label) + '</div></div>';
+  }
+
+  function diagram(f){
+    // side view scaled: floor at bottom, heights in cm mapped to pixels
+    const H = 340, scale = H / Math.max(200, f.heightCm + 30);
+    const y = cm => 370 - cm * scale;
+    const line = (cm, color, label) =>
+      '<line x1="40" y1="' + y(cm) + '" x2="330" y2="' + y(cm) + '" stroke="' + color + '" stroke-width="2" stroke-dasharray="6 4"/>'
+      + '<text x="336" y="' + (y(cm) + 4) + '" fill="' + color + '" font-size="12">' + esc(label) + ' ' + cm + '</text>';
+    const personH = f.heightCm;
+    return '<svg viewBox="0 0 520 390" style="width:100%;max-width:520px" role="img" aria-label="Setup diagram">'
+      + '<rect x="0" y="0" width="520" height="390" fill="#0f1512" rx="10"/>'
+      + '<line x1="20" y1="370" x2="500" y2="370" stroke="#33555f" stroke-width="3"/>'
+      // person (simple standing figure)
+      + '<circle cx="90" cy="' + (y(personH) + 8) + '" r="14" fill="none" stroke="#5cc8e8" stroke-width="2.5"/>'
+      + '<line x1="90" y1="' + (y(personH) + 22) + '" x2="90" y2="' + y(personH * 0.55) + '" stroke="#5cc8e8" stroke-width="2.5"/>'
+      + '<line x1="90" y1="' + y(personH * 0.55) + '" x2="70" y2="370" stroke="#5cc8e8" stroke-width="2.5"/>'
+      + '<line x1="90" y1="' + y(personH * 0.55) + '" x2="110" y2="370" stroke="#5cc8e8" stroke-width="2.5"/>'
+      + '<text x="120" y="' + (y(personH) + 16) + '" fill="#5cc8e8" font-size="12">you: ' + personH + ' cm</text>'
+      + line(f.seatHeight.value, '#7ed99a', 'seat')
+      + line(f.deskSitting.value, '#f2c14e', 'desk sit')
+      + line(f.deskStanding.value, '#f29b4e', 'desk stand')
+      + line(f.monitorSitting.value, '#c9a6f2', 'screen sit')
+      + '</svg>';
+  }
+
+  function calc(){
+    $('err').textContent = '';
+    const st = { cm: $('cm').value, ft: $('ft').value, inch: $('inch').value };
+    try { localStorage.setItem('deskfit', JSON.stringify(st)); } catch(e) {}
+    let f;
+    try {
+      let h;
+      if ($('ft').value !== '') h = DeskFitEngine.feetInchesToCm($('ft').value, $('inch').value === '' ? 0 : $('inch').value);
+      else h = st.cm;
+      f = DeskFitEngine.fit(h);
+    } catch(e) { $('err').textContent = e.message; $('out').innerHTML = ''; return; }
+
+    const v = 'At <b>' + f.heightCm + ' cm</b>, your chair sits at <b>' + f.seatHeight.value + ' cm</b>, your desk at <b>' + f.deskSitting.value
+      + ' cm</b> sitting and <b>' + f.deskStanding.value + ' cm</b> standing, and the top of your screen at <b>' + f.monitorSitting.value + ' cm</b> - about <b>' + f.viewDistance.value + ' cm</b> from your eyes.';
+
+    $('out').innerHTML = '<div class="verdict">' + v + '</div><div class="grid"><div class="card">' + diagram(f) + '</div>'
+      + '<div class="card"><div class="stats">'
+      + stat(f, 'seatHeight') + stat(f, 'deskSitting') + stat(f, 'deskStanding') + stat(f, 'keyboardSitting')
+      + stat(f, 'monitorSitting') + stat(f, 'monitorStanding') + stat(f, 'viewDistance')
+      + '<div class="stat"><div class="v">' + f.tiltDeg.min + '-' + f.tiltDeg.max + ' deg</div><div class="b">back tilt</div><div class="k">Screen tilt</div></div>'
+      + '</div><div class="note">Standard anthropometric ratios; the band is the correct range, not error. Elbows ~90 deg, wrists straight, feet flat.</div></div></div>';
+  }
+
+  $('go').onclick = calc;
+  document.querySelectorAll('input').forEach(function(el){ el.addEventListener('input', calc); });
+  try {
+    const st = JSON.parse(localStorage.getItem('deskfit') || 'null');
+    if (st) { if (st.cm !== undefined) $('cm').value = st.cm; if (st.ft !== undefined) $('ft').value = st.ft; if (st.inch !== undefined) $('inch').value = st.inch; }
+  } catch(e) {}
+  calc();
+})();
+</script>
+</body>
+</html>
